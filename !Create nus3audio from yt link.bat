@@ -31,16 +31,15 @@ FOR /f "delims=" %%n IN ('youtube-dl --audio-format wav -x --get-filename "%LINK
 RENAME "%fileName%.wav" "%fileName%.temp"
 ffmpeg -i "%fileName%.temp" -ar 48000 -y "%fileName%.wav"
 
-:: Get name without id (replace special characters with _)
-FOR /f "delims=" %%t IN ('youtube-dl -e "%LINK%"') DO (
-    FOR /f "delims=" %%s IN ('python RemoveIllegalCharacters.py "%%t"') DO (
-        SET title=%%s
-    )
-)
+:: Get name without id
+FOR /f "delims=" %%t IN ('youtube-dl -e "%LINK%"') DO SET title=%%t_
+
+:: Replace special characters with '_' (uses python)
+FOR /f "delims=" %%s IN ('python RemoveIllegalCharacters.py "%title%"') DO SET title=%%s
 
 MKDIR Output
 
-:: Get loop points
+:: Get loop points (uses python)
 IF %loopPoints%=a (
     FOR /f "delims=" %%p IN ('python GetLoopingPoint.py "%filename%.wav") DO (
         SET loopPoints=0-%%p
