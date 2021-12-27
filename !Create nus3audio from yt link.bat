@@ -20,6 +20,9 @@ IF %invalid%==TRUE (
     GOTO :fileOutput
 )
 
+:: Looping Point Option
+SET /p loopPoints=Enter a set of loop points (start-end), enter 'n' for no loop, or enter 'a' for automatic detection: 
+
 :: Download music
 youtube-dl -x --audio-format wav "%LINK%"
 
@@ -37,16 +40,27 @@ FOR /f "delims=" %%t IN ('youtube-dl -e "%LINK%"') DO (
 
 MKDIR Output
 
+:: Get loop points
+IF %loopPoints%=a (
+    FOR /f "delims=" %%p IN ('python GetLoopingPoint.py "%filename%.wav") DO (
+        SET loopPoints=0-%%p
+    )
+)
+
+:: Set loop flag
+SET loopFlag=-l %loopPoints%
+IF %loopPoints%=n SET loopFlag=--no-loop
+
 :: Convert to BRSTM
 IF %output% == 1 (
     ECHO Creating brstm file
-    VGAudioCli -i "%fileName%.wav" -o "Output/%title%.brstm"
+    VGAudioCli -i "%fileName%.wav" %loopFlag% -o "Output/%title%.brstm"
     GOTO :Cleanup
 )
 
 :: Convert to IDSP
 ECHO Creating idsp file
-VGAudioCli -i "%fileName%.wav" -o "%fileName%.idsp"
+VGAudioCli -i "%fileName%.wav" %loopFlag% -o "%fileName%.idsp"
 :: Move IDSP file
 IF %output% == 2 (
     COPY "%fileName%.idsp" "Output/%title%.idsp"
