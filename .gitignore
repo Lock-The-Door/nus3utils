@@ -1,2 +1,5 @@
 .vscode
 *.7z
+/Output
+*.temp
+*.wav

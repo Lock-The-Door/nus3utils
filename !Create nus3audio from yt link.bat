@@ -40,15 +40,15 @@ FOR /f "delims=" %%s IN ('python RemoveIllegalCharacters.py "%title%"') DO SET t
 MKDIR Output
 
 :: Get loop points (uses python)
-IF %loopPoints%=a (
-    FOR /f "delims=" %%p IN ('python GetLoopingPoint.py "%filename%.wav") DO (
+IF %loopPoints%==a (
+    FOR /f "delims=" %%p IN ('python GetLoopingPoint.py "%filename%.wav"') DO (
         SET loopPoints=0-%%p
     )
 )
 
 :: Set loop flag
 SET loopFlag=-l %loopPoints%
-IF %loopPoints%=n SET loopFlag=--no-loop
+IF %loopPoints%==n SET loopFlag=--no-loop
 
 :: Convert to BRSTM
 IF %output% == 1 (
