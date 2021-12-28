@@ -1,30 +1,30 @@
 class Menu:
-    def __init__(self, title, options = [], default = -1, description = '', question = "Choose an option by it's index (.di)"):
+    def __init__(self, title, options = [], default = -1, description = '', question = "Choose an option by it's index (.di): "):
         self.title = title
         self.description = description
         self.question = question 
         self.default = default
         self.options = options
 
-    def showMenu():
-        if question == '':
-            question = title
+    def Display(self):
+        if self.question == '':
+            self.question = self.title
 
-        print(title)
-        print(description)
-        optionsCount = len(options) - 1
+        print(self.title)
+        print(self.description)
+        optionsCount = len(self.options)
         for i in range(optionsCount): 
-            print('['+(i+1)+']' + options[i])
+            print('['+str(i+1)+']' + self.options[i])
        
         isValid = False
         while(not isValid):
-            choice = input(question.replace('.df', default + 1))
+            choice = input(self.question.replace('.di', str(self.default)))
 
             if choice == '':
-                choice = default
+                choice = self.default
 
             try:
-                choice = int(choice)
+                choice = int(choice) - 1
                 if (not choice in range(optionsCount)):
                     raise IndexError
                 isValid = True
