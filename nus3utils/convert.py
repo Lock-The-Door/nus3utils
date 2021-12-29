@@ -15,7 +15,7 @@ def ConvertAudio(sourceAudio, loopOption, source, outputFormat, multifile):
     finishedConvertProcesses = 0
 
     if type(sourceAudio) == str: # single file mode
-        ConvertFile(sourceAudio, loopOption, source, outputFormat)
+        ConvertFile(sourceAudio, loopOption, source, outputFormat, True)
     else: # multi-file mode
         # Create conversion processes
         for audio in sourceAudio:
@@ -38,13 +38,15 @@ def ConvertAudio(sourceAudio, loopOption, source, outputFormat, multifile):
                 if file.endswith(".idsp"):
                     os.remove(os.path.join(os.path.dirname(sourceAudio[0]), file))
 
-def ConvertFile(audio, loopOption, source, outputFormat, multifile=None, convertProgress=None):
+def ConvertFile(audio, loopOption, source, outputFormat, multifile, convertProgress=None):
     # Remove extension
     audio = audio.removesuffix(".temp")
 
     # Get user friendly name if using yt
     if source == 1:
         outputName = youtube.GetTitleFromId(os.path.basename(audio))
+    else:
+        outputName = os.path.basename(audio)
 
     # Ensure output name is system friendly
     outputName = RemoveIllegalCharacters(outputName)
@@ -118,4 +120,4 @@ def ConvertToNus3audio(inputFile, outputName, workingDir=None):
             files.append("-A \"" + filename + "\"" + " \"" + os.path.join(workingDir, file) + "\"")
 
     # create nus3audio file
-    subprocess.run("./exes/nus3audio.exe -n " + " ".join(files) + " -w \"" + outputPath + "\"", stdout=subprocess.DEVNULL)
+    subprocess.run("./exes/nus3audio.exe -n " + " ".join(files) + " -w \"" + outputPath + "\"")
