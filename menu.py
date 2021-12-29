@@ -14,7 +14,7 @@ class Menu:
         print(self.description)
         optionsCount = len(self.options)
         for i in range(optionsCount): 
-            print('['+str(i+1)+']' + self.options[i])
+            print('['+str(i+1)+'] ' + self.options[i])
        
         isValid = False
         while(not isValid):

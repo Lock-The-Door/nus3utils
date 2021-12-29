@@ -1,11 +1,8 @@
 import menu
+# from convert import ConvertAudio
 
 import os
 import shutil
-import subprocess
-from multiprocessing import Process
-import wave
-import ffmpeg
 
 import menu
 import youtube
@@ -30,6 +27,12 @@ menu_downloadMode = menu.Menu(
     options=["Single File", "Bulk Mode (Playlists/Folders)"],
     default=1
 )
+# nus3audio mode
+menu_nus3audioMode = menu.Menu(
+    "Do you want to combine all files to one nus3audio file?",
+    options=["Yes", "No"],
+    default=1
+)
 
 # Main
 def main():
@@ -49,6 +52,7 @@ def main():
 
     source = menu_audioSource.Display()
     outputFormat = menu_outputFormat.Display()
+    multifile = True
 
     # Looping Point Option
     validInput = False
@@ -85,6 +89,11 @@ def main():
             elif (link.find("youtube.com/playlist?list=") != -1): # Playlist
                 id = link.split('=')[1]
                 isPlaylist = True
+
+                # ask multifile if nus3audio
+                if outputFormat == 2:
+                    multifile = menu_nus3audioMode.Display()
+                    multifile = multifile == 1
             else:
                 validInput = False
                 print("Invalid link")
@@ -99,20 +108,14 @@ def main():
             sourceAudio = youtube.DownloadPlaylist(id, path)
             folderName = youtube.GetPlaylistTitleFromId(id)
 
-    jobs = []
-    for audio in sourceAudio:
-        p = Process(target=ConvertFile, args=(audio, loopOption, source, outputFormat))
-        jobs.append(p)
-        p.start()
+    if not multifile:
+        multifile = folderName
+    ConvertAudio(sourceAudio, loopOption, source, outputFormat, multifile)
 
-    # Wait for all jobs to finish
-    for job in jobs:
-        job.join()
-
-    #Cleanup
+    # Get output folder
     tempFolder = path
     outputFolder = os.path.join(os.getcwd(), "Output")
-    if (folderName != ""): # bulk mode
+    if (folderName != "" and type(multifile) != str): # bulk mode
         outputName = RemoveIllegalCharacters(folderName)
         outputFolder = os.path.join(outputFolder, outputName)
 
@@ -134,45 +137,6 @@ def main():
     print("Done converting {} file(s) to {}.".format(filesConverted, outputFormat))
     input("Press enter to exit...")
 
-def ConvertFile(audio, loopOption, source, outputFormat):
-    # Remove extension
-    audio = audio.removesuffix(".temp")
-
-    # Get user friendly name if using yt
-    if source == 1:
-        outputName = youtube.GetTitleFromId(os.path.basename(audio))
-
-    # Ensure output name is system friendly
-    outputName = RemoveIllegalCharacters(outputName)
-
-    # Convert to wav with audio rate of 48000
-    print("Converting {} audio to wav...".format(outputName))
-    ffmpeg.input(audio + ".temp").output(audio + ".wav", acodec="pcm_s16le", ar="48000").overwrite_output().run(quiet=True)
-
-    # Get looping point arg
-    loopingPointArg = "-l "
-    if loopOption == "a": # Auto-detect
-        loopingPointArg += "0-" + str(GetLoopingPoint(audio + ".wav"))
-    elif loopOption != "": # Manual
-        loopingPointArg += str(loopOption[0]) + "-" + str(loopOption[1])
-    else: # No looping
-        loopingPointArg = "--no-loop"
-
-    # Convert to desired format
-    if outputFormat == 0: # .brstm
-        ConvertWithVGAudio(audio + ".wav", loopingPointArg, outputName + ".brstm")
-    else: # .idsp/nus3audio
-        ConvertWithVGAudio(audio + ".wav", loopingPointArg, audio + ".idsp", outputName)
-        if outputFormat == 2: # .nus3audio
-            ConvertToNus3audio(audio + ".idsp", outputName)
-            os.remove(audio + ".idsp")
-        else: # idsp
-            shutil.move(audio + ".idsp", os.path.join(os.path.dirname(audio), outputName + ".idsp"))
-
-    # Cleanup
-    os.remove(audio + ".temp")
-    os.remove(audio + ".wav")
-
 # Removes bad characters from a string
 badCharacters = "\\/:*?\"<>|"
 def RemoveIllegalCharacters(string):
@@ -180,29 +144,7 @@ def RemoveIllegalCharacters(string):
         string = string.replace(c, '_')
     return string
 
-# Calculate looping point
-def GetLoopingPoint(filePath):
-    audio = wave.open(filePath, 'rb')
-    samples = audio.getnframes()
-    return samples
-
-# VG Audio converter
-def ConvertWithVGAudio(inputFile, loopFlag, outputFile, outputName=None):
-    splitFilename = os.path.splitext(outputFile)
-    if outputName == None:
-        outputName = splitFilename[0]
-    print("Converting {} to {}...".format(outputName, splitFilename[1]))
-    outputPath = os.path.join(os.path.dirname(inputFile), outputFile)
-    subprocess.run("VGAudioCli.exe -i \"" + inputFile + "\" " + loopFlag + " -o \"" + outputPath + "\"", stdout=subprocess.DEVNULL)
-
-# Nus3audio converter
-def ConvertToNus3audio(inputFile, outputName):
-    # make output path to temp folder
-    outputPath = os.path.join(os.path.dirname(inputFile), outputName + ".nus3audio")
-
-    print("Converting {} to nus3audio...".format(outputName))
-    subprocess.run("nus3audio.exe -n -A \"" + outputName + "\" \"" + inputFile + "\" -w \"" + outputPath + "\"", stdout=subprocess.DEVNULL)
-
 # Run main
 if __name__ == '__main__':
+    from convert import ConvertAudio
     main()
