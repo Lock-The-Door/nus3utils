@@ -1,5 +1,13 @@
+# Environent generated files
 .vscode
 __pycache__
 
+# Build generated files
+Build exe.bat
+build
+dist
+*.spec
+
+# Program output files
 *-temp
 Output
