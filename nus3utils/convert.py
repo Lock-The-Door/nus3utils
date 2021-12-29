@@ -4,7 +4,7 @@ import os
 from multiprocessing import Process, Array
 import subprocess
 
-import youtube
+from nus3utils import youtube
 import ffmpeg
 import wave
 
@@ -95,7 +95,7 @@ def ConvertWithVGAudio(inputFile, loopFlag, outputFile, outputName=None):
         outputName = splitFilename[0]
     print("Converting {} to {}...".format(outputName, splitFilename[1]))
     outputPath = os.path.join(os.path.dirname(inputFile), outputFile)
-    subprocess.run("VGAudioCli.exe -i \"" + inputFile + "\" " + loopFlag + " -o \"" + outputPath + "\"", stdout=subprocess.DEVNULL)
+    subprocess.run("./exes/VGAudioCli.exe -i \"" + inputFile + "\" " + loopFlag + " -o \"" + outputPath + "\"", stdout=subprocess.DEVNULL)
     print("Converted {} to {}.".format(outputName, splitFilename[1]))
 
 # Nus3audio converter
@@ -118,4 +118,4 @@ def ConvertToNus3audio(inputFile, outputName, workingDir=None):
             files.append("-A \"" + filename + "\"" + " \"" + os.path.join(workingDir, file) + "\"")
 
     # create nus3audio file
-    subprocess.run("nus3audio.exe -n " + " ".join(files) + " -w \"" + outputPath + "\"", stdout=subprocess.DEVNULL)
+    subprocess.run("./exes/nus3audio.exe -n " + " ".join(files) + " -w \"" + outputPath + "\"", stdout=subprocess.DEVNULL)

@@ -1,11 +1,7 @@
-import menu
-# from convert import ConvertAudio
-
 import os
 import shutil
 
-import menu
-import youtube
+from nus3utils import menu, youtube
 
 # Create menus
 # Audio source
@@ -40,10 +36,10 @@ def main():
 
     # Ensure dependency exe's are in the current directory
     dependenciesFound = True
-    if not os.path.exists("VGAudioCli.exe"):
+    if not os.path.exists("./exes/VGAudioCli.exe"):
         print("VGAudioCli.exe not found. Please place it in the current directory.")
         dependenciesFound = False
-    if not os.path.exists("nus3audio.exe"):
+    if not os.path.exists("./exes/nus3audio.exe"):
         print("nus3audio.exe not found. Please place it in the current directory.")
         dependenciesFound = False
     if not dependenciesFound:
@@ -146,5 +142,5 @@ def RemoveIllegalCharacters(string):
 
 # Run main
 if __name__ == '__main__':
-    from convert import ConvertAudio
+    from nus3utils.convert import ConvertAudio
     main()
