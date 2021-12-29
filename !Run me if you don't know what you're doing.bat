@@ -9,7 +9,7 @@ IF errorlevel 1 (
 )
 
 :: First time setup (pip requirements)
-pip install -r requirements.txt
+pip -q install -r requirements.txt
 
 python main.py
 
